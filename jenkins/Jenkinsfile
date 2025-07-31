@@ -16,6 +16,7 @@ pipeline {
                     export GOCACHE=$(pwd)/.gocache
                     mkdir -p $GOCACHE
                     sh 'go test -v ./...'
+                    '''
                 }
             }
         }
