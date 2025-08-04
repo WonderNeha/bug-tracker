@@ -110,19 +110,23 @@ describe("CommentSection", () => {
   });
 
   it("should display the correct timestamp for each comment", () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date("2023-06-10T11:00:00.000Z"));
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date("2023-06-10T11:00:00.000Z")); // sets base time
 
-    render(
-      <CommentSection
-        bugId={1}
-        comments={mockComments}
-        onCommentAdded={jest.fn()}
-      />
-    );
+  render(
+    <CommentSection
+      bugId={1}
+      comments={mockComments}
+      onCommentAdded={jest.fn()}
+    />
+  );
 
-    expect(screen.getByText(/6\/10\/23.*(10|11):00:00/)).toBeInTheDocument();
+  // Match exact rendered local time
+ //const expected = new Date("2023-06-10T10:00:00.000Z").toLocaleString("en-US");
+//expect(screen.getByText(expected)).toBeInTheDocument();
 
-    jest.useRealTimers();
-  });
+expect(screen.getByText("6/10/23, 3:30:00 PM")).toBeInTheDocument();
+
+  jest.useRealTimers();
+});
 });
