@@ -12,13 +12,12 @@ pipeline {
             }
             steps {
                 dir('bugtracker-backend') {
-                   sh '''
-                        mkdir -p .gocache
-                        export GOCACHE=$(pwd)/.gocache
-                        mkdir -p .gomodcache
-                        export GOMODCACHE=$(pwd)/.gomodcache    
-                        go test -v ./...
-                        '''
+                   sh 'go test -v ./... 2>&1 | go-junit-report > report.xml'
+                }
+            }
+            post{
+                always{
+                    junit'bugtracker-backend/test-results.xml'
                 }
             }
         }
