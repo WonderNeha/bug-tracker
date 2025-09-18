@@ -132,7 +132,8 @@ pipeline {
 
         }
     }
-    stage{
+}
+    post {
         always {
             cleanWs()
         }
@@ -142,4 +143,3 @@ pipeline {
 
 
 
-}
