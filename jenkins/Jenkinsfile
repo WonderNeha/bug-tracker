@@ -148,12 +148,12 @@ pipeline {
             docker{
                image 'grafana/k6:latest'
                reuseNode true
-               args '--network=host -u root --entrypoints="" '
+               args '--network=host -u root --entrypoint="" '
             }
         }
         steps {
             dir('tests-perf') {
-                sh 'k6 run scripts.js'
+                sh 'k6 run scripts.js '
             }
         }
     }
