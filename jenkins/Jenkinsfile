@@ -2,15 +2,8 @@ pipeline {
     agent any
 
     stages {
-        // stash perf files so we can restore them inside the k6 docker container
-        stage('Prepare Perf Files') {
-            steps {
-                stash includes: 'tests-perf/**', name: 'perf'
-            }
-        }
-
-        stage('Execute Unit Tests') {
-            parallel {
+        stage('Execute Unite Tests'){
+            parallel{
                 stage('Unit Tests - Backend') {
                     agent {
                         docker {
@@ -33,11 +26,11 @@ pipeline {
 
                                 mkdir -p reports 
                                 mv coverage.html reports/
-                            '''
+                                '''
                         }
                     }
-                    post {
-                        always {
+                    post{
+                        always{
                             junit 'bugtracker-backend/test-results.xml'
                             publishHTML target: [
                                 reportDir: 'bugtracker-backend/reports',
@@ -58,43 +51,45 @@ pipeline {
                     steps {
                         dir('bugtracker-frontend') {
                             sh '''
-                                npm ci
-                                npm test
-                                mkdir -p reports
-                                mv coverage reports/
+                            npm ci
+                            npm test
+                            mkdir -p reports
+                            mv coverage reports/
                             '''
                         }
                     }
                     post {
-                        always {
+                        always{
                             junit 'bugtracker-frontend/test-results.xml'
-                            publishHTML target: [
-                                reportDir: 'bugtracker-frontend/reports/coverage',
+                            publishHTML target:[
+                                reportDir: 'bugtracker-frontend/reports/coverage', 
                                 reportFiles: 'index.html',
                                 reportName: 'Frontend Coverage Report'
                             ]
+                            
                         }
                     }
-                }
+                }    
             }
+
         }
 
-        stage('Launch Application') {
-            agent {
-                docker {
+        stage('Launch Application') { 
+            agent{
+                docker{
                     image 'docker:27.5.1'
                     reuseNode true
                     args '-v /var/run/docker.sock:/var/run/docker.sock -u 0'
                 }
             }
-            steps {
+            steps{
                 sh 'docker compose up --build -d'
             }
         }
 
         stage('API Tests') {
-            agent {
-                docker {
+            agent{
+                docker{
                     image 'mcr.microsoft.com/playwright:v1.50.0-jammy'
                     reuseNode true
                     args '-u 0 --network=host'
@@ -108,8 +103,8 @@ pipeline {
                     sh 'npx playwright test'
                 }
             }
-            post {
-                always {
+            post{
+                always{
                     junit 'tests-api/test-results/results.xml'
                     publishHTML target: [
                         reportDir: 'tests-api/playwright-report',
@@ -117,65 +112,60 @@ pipeline {
                         reportName: 'Playwright API Test Report'
                     ]
                 }
-            }
+            } 
         }
 
         stage('E2E Tests') {
             agent {
-                docker {
+              docker{
                     image 'mcr.microsoft.com/playwright:v1.50.0-jammy'
                     reuseNode true
-                    args '-u 0 --network=host'
-                }
+                    args '-u 0 --network=host'  
             }
-            steps {
-                dir('tests-e2e') {
-                    sh 'npm ci'
-                    sh 'npx playwright test'
-                }
+        }
+        steps {
+            dir('tests-e2e') {
+                sh 'npm ci'
+                sh 'npx playwright test'
             }
-            post {
-                always {
-                    junit 'tests-e2e/test-results/results.xml'
-                    publishHTML target: [
-                        reportDir: 'tests-e2e/playwright-report',
-                        reportFiles: 'index.html',
-                        reportName: 'playwright E2E Test Report'
-                    ]
-                }
+
+
+        }
+        post {
+            always{
+                junit 'tests-e2e/test-results/results.xml'
+                publishHTML target: [
+                    reportDir: 'tests-e2e/playwright-report',
+                    reportFiles: 'index.html',
+                    reportName: 'playwright E2E Test Report'
+                ]
+            }
+        }
+    }
+
+    stage('Perfomance Tests') {
+        agent {
+            docker {
+               image 'grafana/k6:latest'
+               reuseNode true
+               args '--network=host -u root --entrypoint="" '
+            }
+        }
+        steps {
+            dir('tests-perf') {
+                sh 'k6 run script.js'
             }
         }
 
-        stage('Performance Tests') {
-            agent {
-                docker {
-                    image 'grafana/k6:latest'
-                    reuseNode true
-                    // allow Jenkins to run shell inside the container
-                    args '--network=host -u root --entrypoint=""'
-                }
-            }
-            steps {
-                // restore the stashed perf files into the container filesystem
-                unstash 'perf'
-
-                // debug checks (remove after verifying)
-                sh 'echo "PWD=$(pwd)"; ls -la || true'
-                sh 'echo "tests-perf listing:"; ls -la tests-perf || true'
-                sh 'echo "cat tests-perf/scripts.js (if present):"; cat tests-perf/scripts.js || true'
-
-                // run k6 against the restored script
-                sh 'k6 version || true'
-                sh 'k6 run tests-perf/scripts.js'
-            }
-        }
-    } // end stages
-
+    }
+}
     post {
         always {
             cleanWs()
         }
     }
+
 }
+
 
 
