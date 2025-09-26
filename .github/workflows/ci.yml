@@ -6,13 +6,13 @@ on:
        - main
   workflow_dispatch:
 
-jobss:
+jobs:
   unit-test-backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up goo
+      - name: Set up go
         uses: actions/setup-go@v4
         with:
            go-version: "1.21"
