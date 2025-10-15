@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  unit-tests-backend:
+  unit-tests-backends:
     runs-on: ubuntu-latest
     outputs:
       coverage: ${{ steps.test-backend.output.report}}
