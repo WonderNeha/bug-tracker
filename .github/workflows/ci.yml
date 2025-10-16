@@ -113,5 +113,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body:
             ## Frontend Test Coverage Report
-
-            ${{ needs.unit-tests-frontend.outputs.coverage }}             
+            ```
+            ${{ needs.unit-tests-frontend.outputs.coverage }}      
+            ```       
