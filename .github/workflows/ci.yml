@@ -54,20 +54,22 @@ jobs:
 
   unit-tests-frontend:
     runs-on: ubuntu-latest
+    outputs:
+      coverage: ${{ steps.test-frontend.outputs.report }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+       uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
+       name: Set up Node.js
+       uses: actions/setup-node@v4
+       with:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: bugtracker-frontend/package-lock.json
 
-      - name: Execute Frontend Unit Tests
-        working-directory: bugtracker-frontend
-        run: |
+       name: Execute Frontend Unit Tests
+       id: test-frontend
+       working-directory: bugtracker-frontend
+       run: |
           npm ci
           npm test | tee full_output.txt
 
@@ -76,17 +78,21 @@ jobs:
           cat full_output.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
-      - name: Publish Frontend Test Results
-        uses: dorny/test-reporter@v1
-        if: always()    
-        with:
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          cat full_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+       name: Publish Frontend Test Results
+       uses: dorny/test-reporter@v1
+       if: always()    
+       with:
           name: Frontend Unit Tests reporter
           path: bugtracker-frontend/test-results.xml
           reporter: jest-junit  
 
   create-coverage-comment:
     if: github.event_name == 'pull_request'
-    needs: [unit-test-backend]
+    needs: [unit-test-backend, unit-tests-frontend]
     runs-on: ubuntu-latest 
     permissions:
       pull-requests: write
@@ -98,4 +104,14 @@ jobs:
           body: |
             ## Backend Test Coverage Report
             ```
-            ${{ needs.unit-test-backend.outputs.coverage }}         
+            ${{ needs.unit-test-backend.outputs.coverage }}  
+            ```
+
+      - name: Create Frontend Coverage comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body:
+            ## Frontend Test Coverage Report
+            ```
+            ${{ needs.unit-tests-frontend.outputs.coverage }}             
