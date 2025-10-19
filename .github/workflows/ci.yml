@@ -127,7 +127,7 @@ jobs:
             ${{ needs.unit-test-frontend.outputs.coverage }}
             ```
   api-tests:
-    needs: [unit-tests-backend, unit-tests-frontend]
+    needs: [unit-test-backend, unit-test-frontend]
     runs-on: ubuntu-latest
 
 
