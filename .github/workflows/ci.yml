@@ -159,9 +159,11 @@ jobs:
       - name: Setup K6
         uses: grafana/run-k6-action@v1
 
+      - name: Run k6 tests
+        uses: grafana/run-k6-action@v1 
+
         with:
           path: tests-perf/script.js
-          flags: --out json=summary.json    
 
       - name: Shut Down Application
         run: docker compose down
