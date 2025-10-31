@@ -156,10 +156,19 @@ jobs:
           npx playwright test
 
 
-      - name: Setup K6
+      - name: Run K6 Performance Tests
         uses: grafana/run-k6-action@v1
         with:
-          path: tests-perf/script.js
+          github-token: ${{ secrets.GITHUB_TOKEN }}   # ✅ Required input
+          path: tests-perf/script.js                  # ✅ Path to your test script
+          parallel: false
+          fail-fast: false
+          cloud-run-locally: true
+          cloud-comment-on-pr: true
+          only-verify-scripts: false
+          debug: false
+          disable-analytics: false
+
 
       - name: Shut Down Application
         run: docker compose down
