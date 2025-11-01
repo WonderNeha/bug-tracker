@@ -157,9 +157,7 @@ jobs:
 
       - name: Setup K6
         uses: grafana/run-k6-action@v1    
-        with:
-          path: tests-perf/script.js
-          
+
       - name: Run Performance Tests
         uses: grafana/run-k6-action@v1
         with:
