@@ -200,7 +200,7 @@ jobs:
           retention-days: 30 
 
       - name: Upload Performance Raw Results
-        if: always
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: performance-raw-results
@@ -208,7 +208,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Performance HTML Report
-        if: always
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: performance-report
